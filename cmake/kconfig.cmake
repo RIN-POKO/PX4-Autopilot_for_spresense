@@ -341,9 +341,9 @@ if(EXISTS ${BOARD_DEFCONFIG})
         add_definitions( ${COMPILE_DEFINITIONS})
 	endif()
 
-	if(LINUX)
-        add_definitions( "-D__PX4_LINUX" )
-	endif()
+    if (PX4_PLATFORM STREQUAL "posix")
+        add_definitions("-D__PX4_LINUX")
+    endif()
 
 	if(LOCKSTEP)
         set(ENABLE_LOCKSTEP_SCHEDULER yes)

@@ -56,12 +56,19 @@ using namespace time_literals;
 
 #define SBUS_DEBUG_LEVEL 	0 /* Set debug output level */
 
-#if defined(__PX4_LINUX)
+// #if defined(__PX4_LINUX)
+// #include <sys/ioctl.h>
+// #include <asm-generic/termbits.h>
+// #else
+// #include <termios.h>
+// #endif
+#if defined(__PX4_LINUX) && !defined(__PX4_NUTTX)
 #include <sys/ioctl.h>
 #include <asm-generic/termbits.h>
 #else
 #include <termios.h>
 #endif
+
 
 #define SBUS_START_SYMBOL	0x0f
 
