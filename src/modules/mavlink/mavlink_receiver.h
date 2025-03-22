@@ -91,6 +91,8 @@
 #include <uORB/topics/position_setpoint_triplet.h>
 #include <uORB/topics/radio_status.h>
 #include <uORB/topics/rc_channels.h>
+#include <uORB/topics/rtt_ack.h>
+#include <uORB/topics/rtt_syn.h>
 #include <uORB/topics/sensor_baro.h>
 #include <uORB/topics/sensor_gps.h>
 #include <uORB/topics/telemetry_status.h>
@@ -185,6 +187,8 @@ private:
 	void handle_message_radio_status(mavlink_message_t *msg);
 	void handle_message_rc_channels(mavlink_message_t *msg);
 	void handle_message_rc_channels_override(mavlink_message_t *msg);
+	void handle_message_rtt_ack(mavlink_message_t *msg);
+	void handle_message_rtt_syn(mavlink_message_t *msg);
 	void handle_message_serial_control(mavlink_message_t *msg);
 	void handle_message_set_actuator_control_target(mavlink_message_t *msg);
 	void handle_message_set_attitude_target(mavlink_message_t *msg);
@@ -192,6 +196,7 @@ private:
 	void handle_message_set_position_target_global_int(mavlink_message_t *msg);
 	void handle_message_set_position_target_local_ned(mavlink_message_t *msg);
 	void handle_message_statustext(mavlink_message_t *msg);
+	void handle_message_gps_input(mavlink_message_t *msg);
 	void handle_message_tunnel(mavlink_message_t *msg);
 	void handle_message_trajectory_representation_bezier(mavlink_message_t *msg);
 	void handle_message_trajectory_representation_waypoints(mavlink_message_t *msg);
@@ -318,6 +323,8 @@ private:
 	uORB::Publication<vehicle_odometry_s>			_mocap_odometry_pub{ORB_ID(vehicle_mocap_odometry)};
 	uORB::Publication<vehicle_odometry_s>			_visual_odometry_pub{ORB_ID(vehicle_visual_odometry)};
 	uORB::Publication<vehicle_rates_setpoint_s>		_rates_sp_pub{ORB_ID(vehicle_rates_setpoint)};
+	uORB::Publication<rtt_ack_s>				_rtt_ack_pub{ORB_ID(rtt_ack)};
+	uORB::Publication<rtt_syn_s>				_rtt_syn_pub{ORB_ID(rtt_syn)};
 	uORB::Publication<vehicle_trajectory_bezier_s>		_trajectory_bezier_pub{ORB_ID(vehicle_trajectory_bezier)};
 	uORB::Publication<vehicle_trajectory_waypoint_s>	_trajectory_waypoint_pub{ORB_ID(vehicle_trajectory_waypoint)};
 

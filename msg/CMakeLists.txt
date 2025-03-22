@@ -137,6 +137,8 @@ set(msg_files
 	rc_parameter_map.msg
 	rpm.msg
 	rtl_time_estimate.msg
+	rtt_syn.msg
+	rtt_ack.msg
 	safety.msg
 	satellite_info.msg
 	sensor_accel.msg

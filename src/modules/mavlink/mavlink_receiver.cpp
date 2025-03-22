@@ -268,6 +268,18 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_statustext(msg);
 		break;
 
+	case MAVLINK_MSG_ID_GPS_INPUT:
+		handle_message_gps_input(msg);
+		break;
+
+	case MAVLINK_MSG_ID_RTT_ACK:
+		handle_message_rtt_ack(msg);
+		break;
+
+	case MAVLINK_MSG_ID_RTT_SYN:
+		handle_message_rtt_syn(msg);
+		break;
+
 #if !defined(CONSTRAINED_FLASH)
 
 	case MAVLINK_MSG_ID_NAMED_VALUE_FLOAT:
@@ -2922,6 +2934,111 @@ void MavlinkReceiver::handle_message_statustext(mavlink_message_t *msg)
 	}
 }
 
+void MavlinkReceiver::handle_message_gps_input(mavlink_message_t *msg)
+{
+	mavlink_gps_input_t gps_input;
+	mavlink_msg_gps_input_decode(msg, &gps_input);
+
+	sensor_gps_s gps{};
+
+	device::Device::DeviceId device_id;
+	device_id.devid_s.bus_type = device::Device::DeviceBusType::DeviceBusType_MAVLINK;
+	device_id.devid_s.address = msg->sysid;
+	device_id.devid_s.devtype = DRV_GPS_DEVTYPE_SIM;
+
+	gps.device_id = device_id.devid;
+
+	gps.lat = gps_input.lat;
+	gps.lon = gps_input.lon;
+
+	if (GPS_INPUT_IGNORE_FLAG_ALT & gps_input.ignore_flags) {
+		;
+
+	} else {
+		gps.alt = gps_input.alt;
+		gps.alt_ellipsoid = gps_input.alt;
+	}
+
+	gps.s_variance_m_s = 0.25f;
+	gps.c_variance_rad = 0.5f;
+	gps.fix_type = gps_input.fix_type;
+
+	if (GPS_INPUT_IGNORE_FLAG_HDOP & gps_input.ignore_flags) {
+		gps.hdop = UINT16_MAX;
+		gps.eph = UINT16_MAX;
+
+	} else {
+		gps.hdop = gps_input.hdop;
+		gps.eph = gps_input.hdop;
+	}
+
+	if (GPS_INPUT_IGNORE_FLAG_VDOP & gps_input.ignore_flags) {
+		gps.vdop = UINT16_MAX;
+		gps.epv = UINT16_MAX;
+
+	} else {
+		gps.vdop = gps_input.vdop;
+		gps.epv = gps_input.vdop;
+	}
+
+	gps.noise_per_ms = 0;
+	gps.automatic_gain_control = 0;
+	gps.jamming_indicator = 0;
+	gps.jamming_state = 0;
+
+	gps.vel_m_s = sqrtf(gps_input.vn * gps_input.vn + gps_input.ve * gps_input.ve);
+
+	if (GPS_INPUT_IGNORE_FLAG_VEL_HORIZ & gps_input.ignore_flags) {
+		;
+
+	} else {
+		gps.vel_n_m_s = gps_input.vn;
+		gps.vel_e_m_s = gps_input.ve;
+	}
+
+	if (GPS_INPUT_IGNORE_FLAG_VEL_VERT & gps_input.ignore_flags) {
+		;
+
+	} else {
+		gps.vel_d_m_s = gps_input.vd;
+	}
+
+	if ((GPS_INPUT_IGNORE_FLAG_VEL_HORIZ | GPS_INPUT_IGNORE_FLAG_VEL_VERT) & gps_input.ignore_flags) {
+		;
+
+	} else {
+		gps.cog_rad = atan2(gps_input.ve,
+				    gps_input.vn);// Course over ground (NOT heading, but direction of movement), -PI..PI, (radians)
+	}
+
+	if (GPS_INPUT_IGNORE_FLAG_SPEED_ACCURACY & gps_input.ignore_flags) {
+		;
+	}
+
+	if (GPS_INPUT_IGNORE_FLAG_HORIZONTAL_ACCURACY & gps_input.ignore_flags) {
+		;
+	}
+
+	if (GPS_INPUT_IGNORE_FLAG_VERTICAL_ACCURACY & gps_input.ignore_flags) {
+		;
+	}
+
+
+	gps.vel_ned_valid = true;
+
+	gps.timestamp_time_relative = 0;
+	gps.time_utc_usec = gps_input.time_usec;
+
+	gps.satellites_used = gps_input.satellites_visible;
+
+	gps.heading = NAN;
+	gps.heading_offset = NAN;
+
+	gps.timestamp = hrt_absolute_time();
+
+	_sensor_gps_pub.publish(gps);
+}
+
 void MavlinkReceiver::CheckHeartbeats(const hrt_abstime &t, bool force)
 {
 	// check HEARTBEATs for timeout
@@ -3529,4 +3646,21 @@ void MavlinkReceiver::stop()
 {
 	_should_exit.store(true);
 	pthread_join(_thread, nullptr);
+}
+
+void MavlinkReceiver::handle_message_rtt_ack(mavlink_message_t *msg)
+{
+
+
+}
+
+void MavlinkReceiver::handle_message_rtt_syn(mavlink_message_t *msg)
+{
+	mavlink_rtt_syn_t rtt_syn;
+	mavlink_msg_rtt_syn_decode(msg, &rtt_syn);
+
+	// send RTT SYN
+	rtt_ack_s rtt_ack;
+	rtt_ack.syn_send_time_usec = rtt_syn.syn_send_time_usec;
+	_rtt_ack_pub.publish(rtt_ack);
 }

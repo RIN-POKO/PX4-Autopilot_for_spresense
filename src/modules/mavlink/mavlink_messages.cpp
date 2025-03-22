@@ -103,6 +103,8 @@
 #include "streams/PROTOCOL_VERSION.hpp"
 #include "streams/RAW_RPM.hpp"
 #include "streams/RC_CHANNELS.hpp"
+#include "streams/RTT_ACK.hpp"
+#include "streams/RTT_SYN.hpp"
 #include "streams/SCALED_IMU.hpp"
 #include "streams/SCALED_IMU2.hpp"
 #include "streams/SCALED_IMU3.hpp"
